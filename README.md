@@ -1,10 +1,10 @@
-# Voice to Claude - Raycast Scripts
+# Voice to AI - Raycast Scripts
 
-Raycast script commands that integrate MacWhisper voice transcription with Claude Code in Warp terminal.
+Raycast script commands that integrate MacWhisper voice transcription with AI assistants (Claude Code, Google Gemini).
 
-## Flow Diagram
+## Flow Diagrams
 
-### Option A: One-Shot (`vcc`)
+### Claude: One-Shot (`vcc`)
 
 ```mermaid
 flowchart TD
@@ -21,7 +21,7 @@ flowchart TD
     style I fill:#c8e6c9,stroke:#2e7d32
 ```
 
-### Option B: Two-Step (`ctc`)
+### Claude: Two-Step (`ctc`)
 
 ```mermaid
 flowchart TD
@@ -31,6 +31,38 @@ flowchart TD
     D --> E[Creates Warp launch config]
     E --> F[Warp opens]
     F --> G[✅ claude runs with your prompt]
+
+    style B fill:#e1f5fe,stroke:#01579b
+    style G fill:#c8e6c9,stroke:#2e7d32
+```
+
+### Gemini: One-Shot (`vtg`)
+
+```mermaid
+flowchart TD
+    A[Raycast: type vtg] --> B[MacWhisper Global opens]
+    B --> C[🎤 Speak your prompt]
+    C --> D[Stop recording]
+    D --> E[Transcript copied to clipboard]
+    E --> F[Script detects change]
+    F --> G[Opens Chrome with ?prompt=]
+    G --> H[Extension injects text]
+    H --> I[✅ Gemini receives your prompt]
+
+    style C fill:#e1f5fe,stroke:#01579b
+    style I fill:#c8e6c9,stroke:#2e7d32
+```
+
+### Gemini: Two-Step (`ctg`)
+
+```mermaid
+flowchart TD
+    A[MacWhisper dictation] --> B[🎤 Speak]
+    B --> C[Transcript in clipboard]
+    C --> D[Raycast: type ctg]
+    D --> E[Opens Chrome with ?prompt=]
+    E --> F[Extension injects text]
+    F --> G[✅ Gemini receives your prompt]
 
     style B fill:#e1f5fe,stroke:#01579b
     style G fill:#c8e6c9,stroke:#2e7d32
@@ -51,12 +83,32 @@ Two-step workflow (more reliable):
 1. Use MacWhisper dictation separately (fn key or custom shortcut)
 2. Run this command to send clipboard content to Claude in Warp
 
+### Voice to Gemini (`vtg`)
+One-shot voice-to-Gemini workflow:
+1. Triggers MacWhisper Global overlay
+2. Records your voice and transcribes locally
+3. Detects when transcription is copied to clipboard
+4. Opens Chrome with URL-encoded prompt
+5. Extension injects text into Gemini input
+
+### Clipboard to Gemini (`ctg`)
+Two-step workflow:
+1. Use MacWhisper dictation separately
+2. Run this command to open Gemini with clipboard content
+
 ## Requirements
 
+### Core
 - **MacWhisper Pro** - for Global feature with auto-copy
-- **Warp** - terminal with launch configuration support
 - **Raycast** - command launcher
+
+### For Claude Scripts
+- **Warp** - terminal with launch configuration support
 - **Claude Code** - CLI tool (`claude`)
+
+### For Gemini Scripts
+- **Google Chrome** - browser
+- **Gemini URL Prompt** - Chrome extension ([Install](https://chromewebstore.google.com/detail/gemini-url-prompt/gcooahlbfkojbacclfbofkcknbiopjan))
 
 ## Installation
 
@@ -90,6 +142,18 @@ Two-step workflow (more reliable):
 2. Open Raycast, type `ctc` → Enter
 3. Warp opens with Claude using your transcript
 
+### Option C: One-Shot (Voice to Gemini)
+1. Open Raycast, type `vtg` → Enter
+2. MacWhisper Global appears, starts recording
+3. Speak your prompt
+4. Press `⌃⌥W` to stop recording
+5. Chrome opens Gemini with your prompt
+
+### Option D: Two-Step (Clipboard to Gemini)
+1. Use MacWhisper dictation (fn key) → speak → release
+2. Open Raycast, type `ctg` → Enter
+3. Chrome opens Gemini with your transcript
+
 ## Customization
 
 Edit the scripts to change:
@@ -107,11 +171,19 @@ TIMEOUT=120
 
 ## How It Works
 
-The scripts use Warp's launch configuration feature:
+### Claude Scripts
+Uses Warp's launch configuration feature:
 1. Create a temporary YAML config in `~/.warp/launch_configurations/`
 2. Open Warp via `warp://launch/<config-name>` URL scheme
 3. Warp executes the `claude` command with your transcript
 4. Config file is cleaned up after 5 seconds
+
+### Gemini Scripts
+Uses URL parameters + Chrome extension:
+1. URL-encode the transcript with Python's urllib
+2. Open `https://gemini.google.com/app?prompt=<encoded-text>`
+3. Chrome extension detects `?prompt=` parameter
+4. Extension injects text into Gemini's input field
 
 ## Troubleshooting
 
@@ -126,6 +198,11 @@ The scripts use Warp's launch configuration feature:
 **Timeout waiting for transcription:**
 - Increase `TIMEOUT` value in the script
 - Ensure MacWhisper "Auto Copy" is enabled
+
+**Gemini opens but input is empty:**
+- Ensure "Gemini URL Prompt" Chrome extension is installed
+- Check extension is enabled on gemini.google.com
+- Try refreshing the page
 
 ## License
 
