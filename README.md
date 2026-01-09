@@ -108,9 +108,11 @@ Two-step workflow:
 
 ### For Gemini Scripts
 - **Google Chrome** - browser
-- **Gemini URL Prompt** - Chrome extension ([Install](https://chromewebstore.google.com/detail/gemini-url-prompt-auto-prefill/gcooahlbfkojbacclfbofkcknbiopjan))
+- **Gemini URL Prompt** - Chrome extension (install locally, see below)
 
 ## Installation
+
+### Raycast Scripts
 
 1. Copy scripts to a folder (e.g., `~/Developer/raycast-scripts/`)
 2. Make executable:
@@ -120,6 +122,14 @@ Two-step workflow:
 3. Open Raycast → Settings → Extensions → Script Commands
 4. Click "Add Directories" → select your scripts folder
 5. In Raycast, run "Reload Script Directories"
+
+### Chrome Extension (for Gemini)
+
+1. Clone or download `gemini-url-prompt/` folder
+2. Open Chrome → `chrome://extensions/`
+3. Enable **Developer mode** (toggle top right)
+4. Click **Load unpacked**
+5. Select the `gemini-url-prompt` folder
 
 ## MacWhisper Configuration
 
