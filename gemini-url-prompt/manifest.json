@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "Gemini URL Prompt",
+  "version": "1.0",
+  "description": "Prefill Gemini input via URL parameter (?prompt= or ?q=)",
+  "author": "gaiar",
+  "content_scripts": [
+    {
+      "matches": ["https://gemini.google.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "128": "icons/icon128.png"
+  }
+}
