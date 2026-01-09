@@ -55,8 +55,12 @@ while [ "$elapsed" -lt "$TIMEOUT" ]; do
         echo "---"
         echo ""
 
+        # Append transcription disclaimer
+        DISCLAIMER=$'\n\n---\nNote: This is automated voice transcription and may contain errors. Please correct any grammar or transcription mistakes first, then proceed with the request.'
+        prompt_text="${new_clipboard}${DISCLAIMER}"
+
         # URL encode the transcript
-        encoded=$(python3 -c "import urllib.parse, sys; print(urllib.parse.quote(sys.stdin.read()))" <<< "$new_clipboard")
+        encoded=$(python3 -c "import urllib.parse, sys; print(urllib.parse.quote(sys.stdin.read()))" <<< "$prompt_text")
 
         # Open Gemini with prompt
         open "https://gemini.google.com/app?prompt=$encoded"
