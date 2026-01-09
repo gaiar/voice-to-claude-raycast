@@ -4,34 +4,36 @@ Raycast script commands that integrate MacWhisper voice transcription with Claud
 
 ## Flow Diagram
 
+### Option A: One-Shot (`vcc`)
+
 ```mermaid
-flowchart TB
-    subgraph "Option A: One-Shot (vcc)"
-        A1[Press Raycast hotkey] --> A2[Type 'vcc']
-        A2 --> A3[MacWhisper Global opens]
-        A3 --> A4[🎤 Speak your prompt]
-        A4 --> A5[Stop recording]
-        A5 --> A6[Transcription → Clipboard]
-        A6 --> A7[Script detects clipboard change]
-        A7 --> A8[Creates Warp launch config]
-        A8 --> A9[Warp opens in ~/Developer]
-        A9 --> A10[claude 'your prompt' runs]
-    end
+flowchart TD
+    A[Raycast: type vcc] --> B[MacWhisper Global opens]
+    B --> C[🎤 Speak your prompt]
+    C --> D[Stop recording]
+    D --> E[Transcript copied to clipboard]
+    E --> F[Script detects change]
+    F --> G[Creates Warp launch config]
+    G --> H[Warp opens]
+    H --> I[✅ claude runs with your prompt]
 
-    subgraph "Option B: Two-Step (ctc)"
-        B1[Use MacWhisper dictation] --> B2[🎤 Speak]
-        B2 --> B3[Transcription → Clipboard]
-        B3 --> B4[Press Raycast hotkey]
-        B4 --> B5[Type 'ctc']
-        B5 --> B6[Creates Warp launch config]
-        B6 --> B7[Warp opens in ~/Developer]
-        B7 --> B8[claude 'your prompt' runs]
-    end
+    style C fill:#e1f5fe,stroke:#01579b
+    style I fill:#c8e6c9,stroke:#2e7d32
+```
 
-    style A4 fill:#e1f5fe
-    style B2 fill:#e1f5fe
-    style A10 fill:#c8e6c9
-    style B8 fill:#c8e6c9
+### Option B: Two-Step (`ctc`)
+
+```mermaid
+flowchart TD
+    A[MacWhisper dictation] --> B[🎤 Speak]
+    B --> C[Transcript in clipboard]
+    C --> D[Raycast: type ctc]
+    D --> E[Creates Warp launch config]
+    E --> F[Warp opens]
+    F --> G[✅ claude runs with your prompt]
+
+    style B fill:#e1f5fe,stroke:#01579b
+    style G fill:#c8e6c9,stroke:#2e7d32
 ```
 
 ## Scripts
