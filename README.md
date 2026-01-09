@@ -108,7 +108,7 @@ Two-step workflow:
 
 ### For Gemini Scripts
 - **Google Chrome** - browser
-- **Gemini URL Prompt** - Chrome extension ([Install](https://chromewebstore.google.com/detail/gemini-url-prompt/gcooahlbfkojbacclfbofkcknbiopjan))
+- **Gemini URL Prompt** - Chrome extension ([Install](https://chromewebstore.google.com/detail/gemini-url-prompt-auto-prefill/gcooahlbfkojbacclfbofkcknbiopjan))
 
 ## Installation
 
