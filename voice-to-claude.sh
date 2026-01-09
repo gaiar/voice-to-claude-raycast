@@ -61,8 +61,12 @@ while [ "$elapsed" -lt "$TIMEOUT" ]; do
         echo "---"
         echo ""
 
+        # Append transcription disclaimer
+        DISCLAIMER=$'\n\n---\nNote: This is automated voice transcription and may contain errors. Please correct any grammar or transcription mistakes first, then proceed with the request.'
+        prompt_text="${new_clipboard}${DISCLAIMER}"
+
         # Escape the transcript for YAML and shell
-        escaped_transcript=$(echo "$new_clipboard" | tr '\n' ' ' | sed "s/'/'\\\\''/g")
+        escaped_transcript=$(echo "$prompt_text" | tr '\n' ' ' | sed "s/'/'\\\\''/g")
 
         # Ensure launch config directory exists
         mkdir -p "$WARP_LAUNCH_DIR"

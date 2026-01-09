@@ -32,9 +32,13 @@ if [ -z "$TRANSCRIPT" ]; then
     exit 1
 fi
 
+# Append transcription disclaimer
+DISCLAIMER=$'\n\n---\nNote: This is automated voice transcription and may contain errors. Please correct any grammar or transcription mistakes first, then proceed with the request.'
+PROMPT_TEXT="${TRANSCRIPT}${DISCLAIMER}"
+
 # Escape the transcript for YAML and shell
 # Replace newlines with spaces, escape quotes
-escaped_transcript=$(echo "$TRANSCRIPT" | tr '\n' ' ' | sed "s/'/'\\\\''/g")
+escaped_transcript=$(echo "$PROMPT_TEXT" | tr '\n' ' ' | sed "s/'/'\\\\''/g")
 
 # Ensure launch config directory exists
 mkdir -p "$WARP_LAUNCH_DIR"
