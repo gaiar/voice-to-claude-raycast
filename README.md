@@ -176,7 +176,7 @@ MACWHISPER_SHORTCUT='keystroke "w" using {control down, option down}'
 DEVELOPER_PATH="/Users/gaiar/Developer"
 
 # How long to wait for transcription (seconds)
-TIMEOUT=120
+TIMEOUT=600
 ```
 
 ## How It Works
