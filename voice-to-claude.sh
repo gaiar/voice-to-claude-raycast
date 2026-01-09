@@ -27,7 +27,7 @@ DEVELOPER_PATH="/Users/gaiar/Developer"
 WARP_LAUNCH_DIR="$HOME/.warp/launch_configurations"
 
 # Timeout in seconds (how long to wait for transcription)
-TIMEOUT=120
+TIMEOUT=600
 
 # ============================================
 # SCRIPT LOGIC

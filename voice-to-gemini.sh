@@ -22,7 +22,7 @@
 MACWHISPER_SHORTCUT='keystroke "w" using {control down, option down}'
 
 # Timeout in seconds
-TIMEOUT=120
+TIMEOUT=600
 
 # ============================================
 # SCRIPT LOGIC
