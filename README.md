@@ -142,7 +142,7 @@ Two-step workflow:
 
 ### Chrome Extension (for Gemini)
 
-1. Clone or download `gemini-url-prompt/` folder
+1. Get the extension from [gemini-url-prompt](https://github.com/gaiar/gemini-url-prompt) (separate project)
 2. Open Chrome → `chrome://extensions/`
 3. Enable **Developer mode** (toggle top right)
 4. Click **Load unpacked**
