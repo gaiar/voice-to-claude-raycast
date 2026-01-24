@@ -96,6 +96,19 @@ Two-step workflow:
 1. Use MacWhisper dictation separately
 2. Run this command to open Gemini with clipboard content
 
+### Voice to Bear (`vtb`)
+One-shot voice-to-Bear note workflow:
+1. Triggers MacWhisper Global overlay
+2. Records and transcribes locally
+3. Cleans transcript with Ollama (grammar, filler words)
+4. Generates title and tags via Ollama
+5. Creates Bear note with cleaned text + `#voice-note` tag
+
+### Clipboard to Bear (`ctb`)
+Two-step workflow:
+1. Use MacWhisper dictation separately
+2. Run this command to clean and save to Bear
+
 ## Requirements
 
 ### Core
@@ -109,6 +122,10 @@ Two-step workflow:
 ### For Gemini Scripts
 - **Google Chrome** - browser
 - **Gemini URL Prompt** - Chrome extension (install locally, see below)
+
+### For Bear Scripts
+- **Bear** - note-taking app
+- **Ollama** - local LLM server (running on localhost:11434)
 
 ## Installation
 
