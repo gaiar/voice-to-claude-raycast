@@ -68,6 +68,38 @@ flowchart TD
     style G fill:#c8e6c9,stroke:#2e7d32
 ```
 
+### Bear: One-Shot (`vtb`)
+
+```mermaid
+flowchart TD
+    A[Raycast: type vtb] --> B[MacWhisper Global opens]
+    B --> C[🎤 Speak your note]
+    C --> D[Stop recording]
+    D --> E[Transcript copied to clipboard]
+    E --> F[Script detects change]
+    F --> G[Claude Code cleans transcript]
+    G --> H[Claude Code generates title + tag]
+    H --> I[✅ Bear note created]
+
+    style C fill:#e1f5fe,stroke:#01579b
+    style I fill:#c8e6c9,stroke:#2e7d32
+```
+
+### Bear: Two-Step (`ctb`)
+
+```mermaid
+flowchart TD
+    A[MacWhisper dictation] --> B[🎤 Speak]
+    B --> C[Transcript in clipboard]
+    C --> D[Raycast: type ctb]
+    D --> E[Claude Code cleans transcript]
+    E --> F[Claude Code generates title + tag]
+    F --> G[✅ Bear note created]
+
+    style B fill:#e1f5fe,stroke:#01579b
+    style G fill:#c8e6c9,stroke:#2e7d32
+```
+
 ## Scripts
 
 ### Voice to Claude (`vcc`)
@@ -100,8 +132,8 @@ Two-step workflow:
 One-shot voice-to-Bear note workflow:
 1. Triggers MacWhisper Global overlay
 2. Records and transcribes locally
-3. Cleans transcript with Ollama (grammar, filler words)
-4. Generates title and tags via Ollama
+3. Cleans transcript with Claude Code (grammar, filler words, markdown formatting)
+4. Generates title and tags via Claude Code
 5. Creates Bear note with cleaned text + `#voice-note` tag
 
 ### Clipboard to Bear (`ctb`)
@@ -125,7 +157,7 @@ Two-step workflow:
 
 ### For Bear Scripts
 - **Bear** - note-taking app
-- **Ollama** - local LLM server (running on localhost:11434)
+- **Claude Code** - CLI tool (`claude`)
 
 ## Installation
 
