@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Source shell profile for API key and PATH (non-interactive shells don't load .zshrc)
+[[ -f ~/.zshrc ]] && source ~/.zshrc 2>/dev/null
+
 # Required parameters:
 # @raycast.schemaVersion 1
 # @raycast.title Voice to Bear
@@ -11,7 +14,7 @@
 # @raycast.alias vtb
 
 # Documentation:
-# @raycast.description Record with MacWhisper, clean with Ollama, create Bear note
+# @raycast.description Record with MacWhisper, clean with Claude Code, create Bear note
 # @raycast.author gaiar
 
 # ============================================
@@ -20,10 +23,6 @@
 
 # MacWhisper Global keyboard shortcut
 MACWHISPER_SHORTCUT='keystroke "w" using {control down, option down}'
-
-# Ollama configuration
-OLLAMA_HOST="http://localhost:11434"
-OLLAMA_MODEL="gpt-oss:120b-cloud"
 
 # Timeout in seconds (how long to wait for transcription)
 TIMEOUT=600
@@ -35,17 +34,11 @@ VOICE_TAG="voice-note"
 # HELPER FUNCTIONS
 # ============================================
 
-ollama_generate() {
+claude_generate() {
     local prompt="$1"
     local response
 
-    response=$(curl -s "$OLLAMA_HOST/api/generate" \
-        -H "Content-Type: application/json" \
-        -d "$(jq -n --arg model "$OLLAMA_MODEL" --arg prompt "$prompt" '{
-            model: $model,
-            prompt: $prompt,
-            stream: false
-        }')" | jq -r '.response // empty')
+    response=$(claude -p "$prompt" --output-format text 2>/dev/null)
 
     echo "$response"
 }
@@ -58,10 +51,10 @@ url_encode() {
 # SCRIPT LOGIC
 # ============================================
 
-# Check if Ollama is running
-if ! curl -s "$OLLAMA_HOST" > /dev/null 2>&1; then
-    echo "Ollama is not running at $OLLAMA_HOST"
-    osascript -e 'display notification "Ollama is not running. Please start it first." with title "Voice to Bear" sound name "Basso"'
+# Check if Claude Code CLI is available
+if ! command -v claude &> /dev/null; then
+    echo "Claude Code CLI is not installed or not in PATH"
+    osascript -e 'display notification "Claude Code CLI not found. Please install it first." with title "Voice to Bear" sound name "Basso"'
     exit 1
 fi
 
@@ -95,26 +88,29 @@ while [ "$elapsed" -lt "$TIMEOUT" ]; do
 
         TRANSCRIPT="$new_clipboard"
 
-        # Step 1: Clean up the transcript with Ollama
-        echo "Cleaning transcript with Ollama..."
+        # Step 1: Clean up the transcript with Claude
+        echo "Cleaning transcript with Claude..."
 
         CLEAN_PROMPT="You are a text editor. Clean up this voice transcription:
 - Fix grammar and punctuation
 - Remove filler words (um, uh, like, you know)
 - Remove false starts and repetitions
+- Structure as bullet list if the content contains multiple items, steps, or enumerated points
+- Break into paragraphs if the content covers multiple distinct topics or ideas
+- Use markdown formatting where appropriate (lists, bold for emphasis)
 - Keep the original meaning and ideas intact
 - Keep the original tone and style
 - Do NOT summarize or shorten
-- Do NOT add any commentary
-- Output ONLY the cleaned text, nothing else
+- Do NOT add any commentary or headers
+- Output ONLY the cleaned and formatted text, nothing else
 
 Transcription:
 $TRANSCRIPT"
 
-        CLEANED_TEXT=$(ollama_generate "$CLEAN_PROMPT")
+        CLEANED_TEXT=$(claude_generate "$CLEAN_PROMPT")
 
         if [ -z "$CLEANED_TEXT" ]; then
-            echo "Failed to clean transcript with Ollama. Using original."
+            echo "Failed to clean transcript with Claude. Using original."
             CLEANED_TEXT="$TRANSCRIPT"
         else
             echo "Cleaned text:"
@@ -124,7 +120,7 @@ $TRANSCRIPT"
             echo ""
         fi
 
-        # Step 2: Generate title with Ollama
+        # Step 2: Generate title with Claude
         echo "Generating title..."
 
         TITLE_PROMPT="Generate a concise, descriptive title (5-8 words max) for this note.
@@ -133,7 +129,7 @@ Output ONLY the title, no quotes, no punctuation at the end, nothing else.
 Note content:
 $CLEANED_TEXT"
 
-        TITLE=$(ollama_generate "$TITLE_PROMPT")
+        TITLE=$(claude_generate "$TITLE_PROMPT")
 
         if [ -z "$TITLE" ]; then
             TITLE="Voice Note $(date '+%Y-%m-%d %H:%M')"
@@ -144,7 +140,7 @@ $CLEANED_TEXT"
             echo "Generated title: $TITLE"
         fi
 
-        # Step 3: Generate relevant tag with Ollama
+        # Step 3: Generate relevant tag with Claude
         echo "Generating tag..."
 
         TAG_PROMPT="Generate ONE relevant tag for categorizing this note.
@@ -157,7 +153,7 @@ Rules:
 Note content:
 $CLEANED_TEXT"
 
-        GENERATED_TAG=$(ollama_generate "$TAG_PROMPT")
+        GENERATED_TAG=$(claude_generate "$TAG_PROMPT")
 
         if [ -z "$GENERATED_TAG" ]; then
             GENERATED_TAG="general"
