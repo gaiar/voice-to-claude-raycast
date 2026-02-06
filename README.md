@@ -153,7 +153,7 @@ Two-step workflow:
 
 ### For Gemini Scripts
 - **Google Chrome** - browser
-- **Gemini URL Prompt** - Chrome extension (install locally, see below)
+- **[Gemini URL Prompt](https://chromewebstore.google.com/detail/gemini-url-prompt/kdbgjkfdooaiompgeckjbegnnccchmma)** - Chrome extension
 
 ### For Bear Scripts
 - **Bear** - note-taking app
@@ -174,11 +174,7 @@ Two-step workflow:
 
 ### Chrome Extension (for Gemini)
 
-1. Get the extension from [gemini-url-prompt](https://github.com/gaiar/gemini-url-prompt) (separate project)
-2. Open Chrome → `chrome://extensions/`
-3. Enable **Developer mode** (toggle top right)
-4. Click **Load unpacked**
-5. Select the `gemini-url-prompt` folder
+1. Install [Gemini URL Prompt](https://chromewebstore.google.com/detail/gemini-url-prompt/kdbgjkfdooaiompgeckjbegnnccchmma) from the Chrome Web Store
 
 ## MacWhisper Configuration
 
@@ -259,7 +255,7 @@ Uses URL parameters + Chrome extension:
 - Ensure MacWhisper "Auto Copy" is enabled
 
 **Gemini opens but input is empty:**
-- Ensure "Gemini URL Prompt" Chrome extension is installed
+- Install [Gemini URL Prompt](https://chromewebstore.google.com/detail/gemini-url-prompt/kdbgjkfdooaiompgeckjbegnnccchmma) from the Chrome Web Store
 - Check extension is enabled on gemini.google.com
 - Try refreshing the page
 
