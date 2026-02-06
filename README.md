@@ -1,6 +1,6 @@
 # Voice to AI - Raycast Scripts
 
-Raycast script commands that integrate MacWhisper voice transcription with AI assistants (Claude Code, Google Gemini).
+Raycast script commands that integrate voice transcription with AI assistants (Claude Code, Google Gemini) and Bear notes. Supports **MacWhisper** and **Superwhisper** as recording apps.
 
 ## Flow Diagrams
 
@@ -8,7 +8,7 @@ Raycast script commands that integrate MacWhisper voice transcription with AI as
 
 ```mermaid
 flowchart TD
-    A[Raycast: type vcc] --> B[MacWhisper Global opens]
+    A[Raycast: type vcc] --> B[Whisper app records]
     B --> C[🎤 Speak your prompt]
     C --> D[Stop recording]
     D --> E[Transcript copied to clipboard]
@@ -25,7 +25,7 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A[MacWhisper dictation] --> B[🎤 Speak]
+    A[Dictate with any whisper app] --> B[🎤 Speak]
     B --> C[Transcript in clipboard]
     C --> D[Raycast: type ctc]
     D --> E[Creates Warp launch config]
@@ -40,7 +40,7 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A[Raycast: type vtg] --> B[MacWhisper Global opens]
+    A[Raycast: type vtg] --> B[Whisper app records]
     B --> C[🎤 Speak your prompt]
     C --> D[Stop recording]
     D --> E[Transcript copied to clipboard]
@@ -57,7 +57,7 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A[MacWhisper dictation] --> B[🎤 Speak]
+    A[Dictate with any whisper app] --> B[🎤 Speak]
     B --> C[Transcript in clipboard]
     C --> D[Raycast: type ctg]
     D --> E[Opens Chrome with ?prompt=]
@@ -72,7 +72,7 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A[Raycast: type vtb] --> B[MacWhisper Global opens]
+    A[Raycast: type vtb] --> B[Whisper app records]
     B --> C[🎤 Speak your note]
     C --> D[Stop recording]
     D --> E[Transcript copied to clipboard]
@@ -89,7 +89,7 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A[MacWhisper dictation] --> B[🎤 Speak]
+    A[Dictate with any whisper app] --> B[🎤 Speak]
     B --> C[Transcript in clipboard]
     C --> D[Raycast: type ctb]
     D --> E[Claude Code cleans transcript]
@@ -104,7 +104,7 @@ flowchart TD
 
 ### Voice to Claude (`vcc`)
 One-shot voice-to-Claude workflow:
-1. Triggers MacWhisper Global overlay
+1. Triggers your configured whisper app
 2. Records your voice and transcribes locally
 3. Detects when transcription is copied to clipboard
 4. Opens Warp terminal in `~/Developer`
@@ -112,12 +112,12 @@ One-shot voice-to-Claude workflow:
 
 ### Clipboard to Claude (`ctc`)
 Two-step workflow (more reliable):
-1. Use MacWhisper dictation separately (fn key or custom shortcut)
+1. Use any whisper app to dictate separately
 2. Run this command to send clipboard content to Claude in Warp
 
 ### Voice to Gemini (`vtg`)
 One-shot voice-to-Gemini workflow:
-1. Triggers MacWhisper Global overlay
+1. Triggers your configured whisper app
 2. Records your voice and transcribes locally
 3. Detects when transcription is copied to clipboard
 4. Opens Chrome with URL-encoded prompt
@@ -125,12 +125,12 @@ One-shot voice-to-Gemini workflow:
 
 ### Clipboard to Gemini (`ctg`)
 Two-step workflow:
-1. Use MacWhisper dictation separately
+1. Use any whisper app to dictate separately
 2. Run this command to open Gemini with clipboard content
 
 ### Voice to Bear (`vtb`)
 One-shot voice-to-Bear note workflow:
-1. Triggers MacWhisper Global overlay
+1. Triggers your configured whisper app
 2. Records and transcribes locally
 3. Cleans transcript with Claude Code (grammar, filler words, markdown formatting)
 4. Generates title and tags via Claude Code
@@ -138,14 +138,16 @@ One-shot voice-to-Bear note workflow:
 
 ### Clipboard to Bear (`ctb`)
 Two-step workflow:
-1. Use MacWhisper dictation separately
+1. Use any whisper app to dictate separately
 2. Run this command to clean and save to Bear
 
 ## Requirements
 
 ### Core
-- **MacWhisper Pro** - for Global feature with auto-copy
 - **Raycast** - command launcher
+- **One of the following whisper apps:**
+  - **MacWhisper Pro** - for Global feature with auto-copy
+  - **Superwhisper** - with clipboard output mode
 
 ### For Claude Scripts
 - **Warp** - terminal with launch configuration support
@@ -176,36 +178,56 @@ Two-step workflow:
 
 1. Install [Gemini URL Prompt](https://chromewebstore.google.com/detail/gemini-url-prompt/kdbgjkfdooaiompgeckjbegnnccchmma) from the Chrome Web Store
 
-## MacWhisper Configuration
+## Whisper App Configuration
+
+Each `voice-to-*.sh` script has a `WHISPER_APP` variable at the top. Set it to your app of choice:
+
+```bash
+# Whisper app: macwhisper or superwhisper
+WHISPER_APP=macwhisper
+```
+
+### MacWhisper Setup
 
 1. Open MacWhisper → Settings → Global
 2. Set keyboard shortcut: `⌃⌥W` (Control+Option+W)
 3. Enable **Auto Start** - begins recording immediately
 4. Enable **Auto Copy** - copies transcript to clipboard when done
 
+### Superwhisper Setup
+
+1. Open Superwhisper → Settings
+2. Disable **Restore Clipboard** - the scripts need the transcript to remain on the clipboard
+3. Configure a transcription mode that copies output to the clipboard
+4. The scripts trigger recording via the `superwhisper://record` URL scheme
+
+### Wispr Flow
+
+Wispr Flow types directly into the active text field and cannot be triggered programmatically. It does **not** work with the `voice-to-*` scripts. However, it works well with the **clipboard-to-*** scripts (`ctb`, `ctc`, `ctg`) — dictate with Wispr Flow, copy the text, then run the clipboard command.
+
 ## Usage
 
 ### Option A: One-Shot (Voice to Claude)
 1. Open Raycast, type `vcc` → Enter
-2. MacWhisper Global appears, starts recording
+2. Your whisper app starts recording
 3. Speak your prompt
-4. Press `⌃⌥W` to stop recording
+4. Stop recording
 5. Wait for transcription → Warp opens with Claude
 
 ### Option B: Two-Step (Clipboard to Claude)
-1. Use MacWhisper dictation (fn key) → speak → release
+1. Dictate with your whisper app → speak → stop
 2. Open Raycast, type `ctc` → Enter
 3. Warp opens with Claude using your transcript
 
 ### Option C: One-Shot (Voice to Gemini)
 1. Open Raycast, type `vtg` → Enter
-2. MacWhisper Global appears, starts recording
+2. Your whisper app starts recording
 3. Speak your prompt
-4. Press `⌃⌥W` to stop recording
+4. Stop recording
 5. Chrome opens Gemini with your prompt
 
 ### Option D: Two-Step (Clipboard to Gemini)
-1. Use MacWhisper dictation (fn key) → speak → release
+1. Dictate with your whisper app → speak → stop
 2. Open Raycast, type `ctg` → Enter
 3. Chrome opens Gemini with your transcript
 
@@ -214,14 +236,17 @@ Two-step workflow:
 Edit the scripts to change:
 
 ```bash
-# MacWhisper shortcut (must match your MacWhisper settings)
-MACWHISPER_SHORTCUT='keystroke "w" using {control down, option down}'
+# Whisper app: macwhisper or superwhisper
+WHISPER_APP=macwhisper
 
 # Working directory for Claude
 DEVELOPER_PATH="/Users/gaiar/Developer"
 
-# How long to wait for transcription (seconds)
-TIMEOUT=600
+# How long to wait for transcription (seconds) — set in whisper-lib.sh
+WHISPER_TIMEOUT=600
+
+# MacWhisper shortcut (must match your MacWhisper settings) — set in whisper-lib.sh
+MACWHISPER_SHORTCUT='keystroke "w" using {control down, option down}'
 ```
 
 ## How It Works
@@ -242,17 +267,26 @@ Uses URL parameters + Chrome extension:
 
 ## Troubleshooting
 
+**WHISPER_APP not set:**
+- Each `voice-to-*.sh` script must have `WHISPER_APP` set to `macwhisper` or `superwhisper`
+- The script will error with a list of supported values if unset or unrecognized
+
 **MacWhisper Global doesn't open:**
 - Check keyboard shortcut matches in both MacWhisper and script
 - Ensure Raycast has Accessibility permission
+
+**Superwhisper doesn't start recording:**
+- Make sure Superwhisper is running
+- Verify the `superwhisper://record` URL scheme works (run `open "superwhisper://record"` in Terminal)
 
 **Warp opens but no command runs:**
 - Verify `~/.warp/launch_configurations/` directory exists
 - Check Warp version supports launch configurations
 
 **Timeout waiting for transcription:**
-- Increase `TIMEOUT` value in the script
-- Ensure MacWhisper "Auto Copy" is enabled
+- Increase `WHISPER_TIMEOUT` value in `whisper-lib.sh`
+- For MacWhisper: ensure "Auto Copy" is enabled
+- For Superwhisper: ensure "Restore Clipboard" is disabled
 
 **Gemini opens but input is empty:**
 - Install [Gemini URL Prompt](https://chromewebstore.google.com/detail/gemini-url-prompt/kdbgjkfdooaiompgeckjbegnnccchmma) from the Chrome Web Store

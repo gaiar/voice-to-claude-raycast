@@ -57,7 +57,7 @@ windows:
         layout:
           cwd: $DEVELOPER_PATH
           commands:
-            - exec: claude '$escaped_transcript'
+            - exec: claude --model haiku '$escaped_transcript'
 YAML
 
 # Launch Warp with the configuration
