@@ -14,18 +14,15 @@
 # @raycast.alias vtb
 
 # Documentation:
-# @raycast.description Record with MacWhisper, clean with Claude Code, create Bear note
+# @raycast.description Record voice with whisper app, clean with Claude Code, create Bear note
 # @raycast.author gaiar
 
 # ============================================
 # CONFIGURATION - Adjust these to your setup
 # ============================================
 
-# MacWhisper Global keyboard shortcut
-MACWHISPER_SHORTCUT='keystroke "w" using {control down, option down}'
-
-# Timeout in seconds (how long to wait for transcription)
-TIMEOUT=600
+# Whisper app: macwhisper or superwhisper
+WHISPER_APP=macwhisper
 
 # Default tag for voice notes
 VOICE_TAG="voice-note"
@@ -58,40 +55,25 @@ if ! command -v claude &> /dev/null; then
     exit 1
 fi
 
-# Store current clipboard content
-old_clipboard=$(pbpaste 2>/dev/null)
-old_clipboard_hash=$(echo "$old_clipboard" | md5 2>/dev/null)
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+source "$SCRIPT_DIR/whisper-lib.sh"
 
-echo "Recording voice with MacWhisper..."
-echo "   Speak now. When done, stop recording in MacWhisper."
+if ! whisper_record; then
+    osascript -e 'display notification "Timeout waiting for transcription" with title "Voice to Bear" sound name "Basso"'
+    exit 1
+fi
+TRANSCRIPT="$WHISPER_TRANSCRIPT"
+
+echo "Transcription received:"
+echo "---"
+echo "$TRANSCRIPT"
+echo "---"
 echo ""
 
-# Trigger MacWhisper Global shortcut
-osascript -e "tell application \"System Events\" to $MACWHISPER_SHORTCUT" 2>/dev/null
+# Step 1: Clean up the transcript with Claude
+echo "Cleaning transcript with Claude..."
 
-# Poll clipboard for changes
-elapsed=0
-while [ "$elapsed" -lt "$TIMEOUT" ]; do
-    sleep 1
-    elapsed=$((elapsed + 1))
-
-    new_clipboard=$(pbpaste 2>/dev/null)
-    new_clipboard_hash=$(echo "$new_clipboard" | md5 2>/dev/null)
-
-    # Check if clipboard changed and has content
-    if [ "$new_clipboard_hash" != "$old_clipboard_hash" ] && [ -n "$new_clipboard" ]; then
-        echo "Transcription received:"
-        echo "---"
-        echo "$new_clipboard"
-        echo "---"
-        echo ""
-
-        TRANSCRIPT="$new_clipboard"
-
-        # Step 1: Clean up the transcript with Claude
-        echo "Cleaning transcript with Claude..."
-
-        CLEAN_PROMPT="You are a text editor. Clean up this voice transcription:
+CLEAN_PROMPT="You are a text editor. Clean up this voice transcription:
 - Fix grammar and punctuation
 - Remove filler words (um, uh, like, you know)
 - Remove false starts and repetitions
@@ -107,43 +89,43 @@ while [ "$elapsed" -lt "$TIMEOUT" ]; do
 Transcription:
 $TRANSCRIPT"
 
-        CLEANED_TEXT=$(claude_generate "$CLEAN_PROMPT")
+CLEANED_TEXT=$(claude_generate "$CLEAN_PROMPT")
 
-        if [ -z "$CLEANED_TEXT" ]; then
-            echo "Failed to clean transcript with Claude. Using original."
-            CLEANED_TEXT="$TRANSCRIPT"
-        else
-            echo "Cleaned text:"
-            echo "---"
-            echo "$CLEANED_TEXT"
-            echo "---"
-            echo ""
-        fi
+if [ -z "$CLEANED_TEXT" ]; then
+    echo "Failed to clean transcript with Claude. Using original."
+    CLEANED_TEXT="$TRANSCRIPT"
+else
+    echo "Cleaned text:"
+    echo "---"
+    echo "$CLEANED_TEXT"
+    echo "---"
+    echo ""
+fi
 
-        # Step 2: Generate title with Claude
-        echo "Generating title..."
+# Step 2: Generate title with Claude
+echo "Generating title..."
 
-        TITLE_PROMPT="Generate a concise, descriptive title (5-8 words max) for this note.
+TITLE_PROMPT="Generate a concise, descriptive title (5-8 words max) for this note.
 Output ONLY the title, no quotes, no punctuation at the end, nothing else.
 
 Note content:
 $CLEANED_TEXT"
 
-        TITLE=$(claude_generate "$TITLE_PROMPT")
+TITLE=$(claude_generate "$TITLE_PROMPT")
 
-        if [ -z "$TITLE" ]; then
-            TITLE="Voice Note $(date '+%Y-%m-%d %H:%M')"
-            echo "Failed to generate title. Using default: $TITLE"
-        else
-            # Clean up title (remove quotes if present)
-            TITLE=$(echo "$TITLE" | sed 's/^["'\''"]//;s/["'\''"]$//' | head -1)
-            echo "Generated title: $TITLE"
-        fi
+if [ -z "$TITLE" ]; then
+    TITLE="Voice Note $(date '+%Y-%m-%d %H:%M')"
+    echo "Failed to generate title. Using default: $TITLE"
+else
+    # Clean up title (remove quotes if present)
+    TITLE=$(echo "$TITLE" | sed 's/^["'\''"]//;s/["'\''"]$//' | head -1)
+    echo "Generated title: $TITLE"
+fi
 
-        # Step 3: Generate relevant tag with Claude
-        echo "Generating tag..."
+# Step 3: Generate relevant tag with Claude
+echo "Generating tag..."
 
-        TAG_PROMPT="Generate ONE relevant tag for categorizing this note.
+TAG_PROMPT="Generate ONE relevant tag for categorizing this note.
 Rules:
 - Single word or hyphenated-compound (e.g., 'project-idea', 'meeting', 'reminder')
 - Lowercase only
@@ -153,59 +135,45 @@ Rules:
 Note content:
 $CLEANED_TEXT"
 
-        GENERATED_TAG=$(claude_generate "$TAG_PROMPT")
+GENERATED_TAG=$(claude_generate "$TAG_PROMPT")
 
-        if [ -z "$GENERATED_TAG" ]; then
-            GENERATED_TAG="general"
-            echo "Failed to generate tag. Using default: $GENERATED_TAG"
-        else
-            # Clean up tag (lowercase, remove spaces, take first word)
-            GENERATED_TAG=$(echo "$GENERATED_TAG" | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | sed 's/[^a-z0-9-]//g' | head -1)
-            echo "Generated tag: $GENERATED_TAG"
-        fi
+if [ -z "$GENERATED_TAG" ]; then
+    GENERATED_TAG="general"
+    echo "Failed to generate tag. Using default: $GENERATED_TAG"
+else
+    # Clean up tag (lowercase, remove spaces, take first word)
+    GENERATED_TAG=$(echo "$GENERATED_TAG" | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | sed 's/[^a-z0-9-]//g' | head -1)
+    echo "Generated tag: $GENERATED_TAG"
+fi
 
-        # Combine tags: generated tag + voice-note
-        ALL_TAGS="$GENERATED_TAG,$VOICE_TAG"
-        echo "Tags: $ALL_TAGS"
-        echo ""
+# Combine tags: generated tag + voice-note
+ALL_TAGS="$GENERATED_TAG,$VOICE_TAG"
+echo "Tags: $ALL_TAGS"
+echo ""
 
-        # Step 4: Prepare note content with metadata
-        CURRENT_DATE=$(date '+%Y-%m-%d %H:%M')
-        NOTE_CONTENT="$CLEANED_TEXT
+# Step 4: Prepare note content with metadata
+CURRENT_DATE=$(date '+%Y-%m-%d %H:%M')
+NOTE_CONTENT="$CLEANED_TEXT
 
 ---
 *Captured via voice on $CURRENT_DATE*"
 
-        # Step 5: Create Bear note via URL scheme
-        echo "Creating Bear note..."
+# Step 5: Create Bear note via URL scheme
+echo "Creating Bear note..."
 
-        ENCODED_TITLE=$(url_encode "$TITLE")
-        ENCODED_TEXT=$(url_encode "$NOTE_CONTENT")
-        ENCODED_TAGS=$(url_encode "$ALL_TAGS")
+ENCODED_TITLE=$(url_encode "$TITLE")
+ENCODED_TEXT=$(url_encode "$NOTE_CONTENT")
+ENCODED_TAGS=$(url_encode "$ALL_TAGS")
 
-        BEAR_URL="bear://x-callback-url/create?title=$ENCODED_TITLE&text=$ENCODED_TEXT&tags=$ENCODED_TAGS&open_note=yes&edit=no"
+BEAR_URL="bear://x-callback-url/create?title=$ENCODED_TITLE&text=$ENCODED_TEXT&tags=$ENCODED_TAGS&open_note=yes&edit=no"
 
-        open "$BEAR_URL"
+open "$BEAR_URL"
 
-        echo ""
-        echo "Done! Bear note created:"
-        echo "  Title: $TITLE"
-        echo "  Tags: #$GENERATED_TAG #$VOICE_TAG"
+echo ""
+echo "Done! Bear note created:"
+echo "  Title: $TITLE"
+echo "  Tags: #$GENERATED_TAG #$VOICE_TAG"
 
-        osascript -e "display notification \"Note created: $TITLE\" with title \"Voice to Bear\" sound name \"Glass\""
+osascript -e "display notification \"Note created: $TITLE\" with title \"Voice to Bear\" sound name \"Glass\""
 
-        exit 0
-    fi
-
-    # Show progress every 10 seconds
-    if [ $((elapsed % 10)) -eq 0 ]; then
-        echo "Waiting for transcription... (${elapsed}s)"
-    fi
-done
-
-echo "Timeout: No transcription received after ${TIMEOUT} seconds."
-echo "   Make sure MacWhisper Global is configured with:"
-echo "   - Keyboard shortcut matching this script"
-echo "   - Auto Copy enabled"
-osascript -e 'display notification "Timeout waiting for transcription" with title "Voice to Bear" sound name "Basso"'
-exit 1
+exit 0
