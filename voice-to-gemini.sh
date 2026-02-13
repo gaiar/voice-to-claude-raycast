@@ -19,7 +19,7 @@
 # ============================================
 
 # Whisper app: macwhisper or superwhisper
-WHISPER_APP=macwhisper
+WHISPER_APP=superwhisper
 
 # ============================================
 # SCRIPT LOGIC

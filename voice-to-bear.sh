@@ -22,7 +22,7 @@
 # ============================================
 
 # Whisper app: macwhisper or superwhisper
-WHISPER_APP=macwhisper
+WHISPER_APP=superwhisper
 
 # Default tag for voice notes
 VOICE_TAG="voice-note"
@@ -77,9 +77,10 @@ CLEAN_PROMPT="You are a text editor. Clean up this voice transcription:
 - Fix grammar and punctuation
 - Remove filler words (um, uh, like, you know)
 - Remove false starts and repetitions
-- Structure as bullet list if the content contains multiple items, steps, or enumerated points
+- LISTS: If the text contains any kind of enumeration, sequence of items, steps, options, or multiple related points — format them as a proper markdown list. Use '- ' for unordered lists and '1. ' for ordered/sequential lists. Nested items should use proper indentation.
 - Break into paragraphs if the content covers multiple distinct topics or ideas
-- Use markdown formatting where appropriate (lists, bold for emphasis)
+- EMPHASIS: If the speaker stresses, highlights, or emphasizes particular words, phrases, or concepts (e.g., 'really important', 'the key thing is', 'especially', 'most importantly', 'make sure to') — wrap those words or phrases in **bold** markdown
+- Use proper markdown formatting throughout (lists, bold, line breaks)
 - Keep the original meaning and ideas intact
 - Keep the original tone and style
 - Do NOT summarize or shorten
@@ -113,12 +114,15 @@ $CLEANED_TEXT"
 
 TITLE=$(claude_generate "$TITLE_PROMPT")
 
+DATE_PREFIX="[$(date '+%Y-%m-%d')]"
+
 if [ -z "$TITLE" ]; then
-    TITLE="Voice Note $(date '+%Y-%m-%d %H:%M')"
+    TITLE="$DATE_PREFIX Voice Note"
     echo "Failed to generate title. Using default: $TITLE"
 else
     # Clean up title (remove quotes if present)
     TITLE=$(echo "$TITLE" | sed 's/^["'\''"]//;s/["'\''"]$//' | head -1)
+    TITLE="$DATE_PREFIX $TITLE"
     echo "Generated title: $TITLE"
 fi
 

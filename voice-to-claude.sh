@@ -19,7 +19,7 @@
 # ============================================
 
 # Whisper app: macwhisper or superwhisper
-WHISPER_APP=macwhisper
+WHISPER_APP=superwhisper
 
 # Path to open in Warp
 DEVELOPER_PATH="/Users/gaiar/Developer"
